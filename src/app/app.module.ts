@@ -7,17 +7,24 @@ import {ErrorsChartComponent} from "./components/errors-chart/errors-chart.compo
 import {ChartsModule} from "ng2-charts";
 import {DataUtils} from "./utils/data.utils";
 import {HttpClientModule} from "@angular/common/http";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {NgApexchartsModule} from "ng-apexcharts";
+import { RealPredictChartComponent } from './components/real-predict-chart/real-predict-chart.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ErrorsChartComponent
+    ErrorsChartComponent,
+    RealPredictChartComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ChartsModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgApexchartsModule,
   ],
   providers: [
     DataUtils

@@ -1,43 +1,62 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {ChartDataSets, ChartOptions} from 'chart.js';
-import {Color, Label} from 'ng2-charts';
+import {Component, ViewChild} from '@angular/core';
+import {ChartComponent} from 'ng-apexcharts';
+import {ChartOptions} from '../real-predict-chart/real-predict-chart.component';
 
 @Component({
   selector: 'errors-chart',
   templateUrl: './errors-chart.component.html',
   styleUrls: ['./errors-chart.component.less']
 })
-export class ErrorsChartComponent implements OnInit {
+export class ErrorsChartComponent {
 
-  @Input()
-  public lineChartData: ChartDataSets[] = [{
-    data: [],
-    label: 'Погрешность обучения',
-    borderWidth: 1
-  }];
-  @Input()
-  public lineChartLabels: Label[] = [];
-
-  public lineChartOptions = {
-    responsive: true,
-    elements: {
-      point: {
-        borderWidth: 0
+  @ViewChild('chart') chart: ChartComponent;
+  public chartOptions: Partial<ChartOptions> = {
+    series: [
+      {
+        name: "Desktops",
+        data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
       }
+    ],
+    chart: {
+      width: 600,
+      height: 400,
+      type: "line",
+      zoom: {
+        enabled: false
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: "straight"
+    },
+    title: {
+      text: "Погрешность обучения",
+      align: "left"
+    },
+    grid: {
+      row: {
+        colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+        opacity: 0.5
+      }
+    },
+    xaxis: {
+      categories: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep"
+      ]
     }
   };
-  public lineChartColors: Color[] = [{
-    borderColor: 'black',
-    backgroundColor: 'rgba(255,0,0,0.3)',
-  }];
-  public lineChartLegend = true;
-  public lineChartType = 'line';
-  public lineChartPlugins = [];
 
   constructor() {
-  }
-
-  ngOnInit(): void {
   }
 
 }

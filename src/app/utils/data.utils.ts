@@ -8,24 +8,18 @@ import {Layer} from '../models/layer.model';
 @Injectable()
 export class DataUtils {
 
-  private _trainingSamples: Array<number[]>;
-  private _testingSamples: Array<number[]>;
-
-  private _expectedOutput: Array<number[]>;
+  trainingSequence = '';
+  testSequence = '';
 
   private configuration = {
-    epochs: 100_000,
+    epochs: 10_000,
     training: 90,
     testing: 0,
     inputCount: 0,
     contextCount: 0,
     hiddenCount: 0,
     outputCount: 0,
-    normalize: false,
-    moment: false,
-
     windowSize: 4,
-    maxStep: 100000,
     maxError: 0.0001,
     alpha: 0.01,
     scale: 10
@@ -43,22 +37,21 @@ export class DataUtils {
   public training = false;
   public trained = false;
 
-  public lineChartData = [{
+  public trainingAccuracyChartData = [{
     data: [],
     label: 'Погрешность обучения'
   }];
-  public lineChartLabels = [];
+  public trainingAccuracyChartLabels = [];
 
-  private trainingSequence = '';
-  private testSequence = '';
+  public testAccuracyChartData = [{
+    data: [],
+    label: 'Погрешность прогнозирования'
+  }];
+  public testAccuracyChartLabels = [];
 
   constructor(
     private http: HttpClient
   ) {
-  }
-
-  get trainingSamples(): Array<number[]> {
-    return this._trainingSamples;
   }
 
   public distribute(dataset: string) {
@@ -85,8 +78,8 @@ export class DataUtils {
   }
 
   public train() {
-    console.log("Training: ", this.trainingSequence);
-    console.log("Testing: ", this.testSequence);
+    console.log('Training: ', this.trainingSequence);
+    console.log('Testing: ', this.testSequence);
     const sequence: number[] = this.getSequence(this.trainingSequence);
     this.scaleSequence(sequence);
 
@@ -98,7 +91,7 @@ export class DataUtils {
       inputMatrix,
       this.configuration.maxError,
       this.configuration.alpha,
-      this.configuration.maxStep
+      this.configuration.epochs
     );
 
     this.layers = network.layers;
@@ -115,46 +108,39 @@ export class DataUtils {
   public test() {
     console.log('TEST');
     const sequence: number[] = this.getSequence(this.testSequence);
-    const count = this.testSequence.split(' ').length;
+    const count = sequence.length;
     const predict: number[] = Array(count);
     const real: number[] = Array(count);
 
-    console.log('seq: ', this.testSequence);
-    console.log(count);
-    console.log(predict);
-    console.log(real);
+    console.log('test seq: ', this.testSequence);
+    console.log('count: ', count);
 
     for (let i = 0; i < count; i++) {
       const length = 5;
       const seq: number[] = [];
       seq.push(...sequence.slice(0, length));
-      console.log(seq);
 
-      const yPredict = this.testOne(seq);
-      const yReal = sequence[i + 5];
+      const yPredict = this.runSequenceTest(seq);
+      const yReal = sequence[i + length];
+
       predict[i] = yPredict;
       real[i] = yReal;
     }
     console.log('СКО: ', this.calculateError(real, predict), '\n');
-
-    console.log('Реальные: ');
-    this.printArr(real);
-    console.log('Прогноз: ');
-    this.printArr(predict);
+    console.log('Реальные: ', real);
+    console.log('Прогноз: ', predict);
   }
 
-  private testOne(seq: number[]): number {
+  private runSequenceTest(seq: number[]): number {
     const scaleParams: number[] = this.scaleSequence(seq);
-
     const input: Matrix = this.getInputMatrix(seq);
-
     const network: Network = new Network();
-    let y: number = network.test(input, this.w1, this.w2, this.layers, this.contextSet);
-
+    let y: number = network.test(
+      input, this.w1, this.w2, this.layers, this.contextSet
+    );
     if (scaleParams[0] >= 1) { // max >= 1
       y = y * scaleParams[1]; // y = y * scale_k
     }
-
     return y;
   }
 
@@ -255,11 +241,11 @@ export class DataUtils {
   }
 
   private alpha(): number {
-    return 0.01;
+    return this.configuration.alpha;
   }
 
   private learnRate(): number {
-    return 0.1;
+    return this.alpha();
   }
 
 }
