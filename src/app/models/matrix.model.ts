@@ -66,9 +66,7 @@ export class Matrix {
   }
 
   getLine(lineIndex: number): number[] {
-    let line: number[] = Array(this.columns);
-    line.push(...this.data[lineIndex]);
-    return line;
+    return [...this.data[lineIndex]];
   }
 
   public setLine(lineIndex: number, beginIndex: number,
@@ -83,6 +81,7 @@ export class Matrix {
 
   print(): void {
     console.log("\n");
+    console.log(this.data);
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
         let s: string = `${this.data[i][j]}`;

@@ -113,8 +113,9 @@ export class DataUtils {
     let real: number[] = Array(count);
 
     for (let i = 0; i < count; i++) {
-      let seq: number[] = Array(5);
-      seq.push(...sequence.slice(0, seq.length));
+      let length = 5;
+      let seq: number[] = [];
+      seq.push(...sequence.slice(0, length));
 
       let yPredict = this.testOne(seq);
       let yReal = sequence[i + 5];
@@ -159,14 +160,14 @@ export class DataUtils {
   }
 
   private sumSquaredDeviations(arr1: number[], arr2: number[]): number {
-    let summSquarDev = 0;
-    if (arr1.length == arr2.length) {
+    let sumSqrDev = 0;
+    if (arr1.length === arr2.length) {
       for (let i = 0; i < arr1.length; i++) {
-        let deltaSqar = (arr1[i] - arr2[i]) * (arr1[i] - arr2[i]);
-        summSquarDev += deltaSqar;
+        let deltaSqr = Math.pow(arr1[i] - arr2[i], 2);
+        sumSqrDev += deltaSqr;
       }
     }
-    return summSquarDev;
+    return sumSqrDev;
   }
 
   private getAverage(arr: number[]): number {
