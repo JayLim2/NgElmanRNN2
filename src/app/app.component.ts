@@ -14,6 +14,7 @@ export class AppComponent {
   constructor(
     public dataUtils: DataUtils
   ) {
+    this.dataUtils.load();
   }
 
   onTrain() {
