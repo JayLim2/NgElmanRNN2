@@ -31,8 +31,8 @@ export class Network {
 
     let stepsCount = 0;
 
-    let left = -0.5;
-    let right = 0.5;
+    let left = 0;
+    let right = 1;
 
     this.layers[Network.CONTEXT] = new Layer(1, inputCount + hiddenCount);
     this.contextSet = new Matrix(inputRowsCount, hiddenCount, left, right);
@@ -171,20 +171,20 @@ export class Network {
     this.layers = layers;
     this.contextSet = inputContextSet;
 
-    let inputSetSize = input.rows;
-    let inputLength = input.columns;
-    let p = inputLength - 1;
+    let inputRowsCount = input.rows;
+    let inputColumnsCount = input.columns;
+    let inputCount = inputColumnsCount - 1;
 
-    let m = p / 2;
-    if (m < 2) {
-      m = 2;
+    let hiddenCount = inputCount / 2;
+    if (hiddenCount < 2) {
+      hiddenCount = 2;
     }
 
-    let x: number[] = input.getLinePart(inputSetSize - 1, 1, p);
-    let context: number[] = this.contextSet.getLine(inputSetSize - 1);
+    let x: number[] = input.getLinePart(inputRowsCount - 1, 1, inputCount);
+    let context: number[] = this.contextSet.getLine(inputRowsCount - 1);
 
-    this.layers[Network.CONTEXT].neuronsList.setLine(0, 0, p, x);
-    this.layers[Network.CONTEXT].neuronsList.setLine(0, p, m, context);
+    this.layers[Network.CONTEXT].neuronsList.setLine(0, 0, inputCount, x);
+    this.layers[Network.CONTEXT].neuronsList.setLine(0, inputCount, hiddenCount, context);
 
     let Sh: Matrix = this.layers[Network.CONTEXT].neuronsList.times(inputW1).minus(this.layers[Network.HIDDEN].t);
     this.layers[Network.HIDDEN].neuronsList = this.activate(Sh);
@@ -207,11 +207,12 @@ export class Network {
 
   // функция активации
   private activationFunction(x: number): number {
-    return Math.atan(x);
+    return 1 / (1 + Math.exp(-x));
   }
 
   // производная функции активации
   private derivativeActivationFunction(x: number): number {
-    return 1.0 / (1.0 + x * x);
+    let fx = this.activationFunction(x);
+    return fx * (1 - fx);
   }
 }

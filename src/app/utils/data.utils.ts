@@ -137,8 +137,8 @@ export class DataUtils {
     let network: Network = new Network();
     let y: number = network.test(input, this.w1, this.w2, this.layers, this.contextSet);
 
-    if (scaleParams[0] >= 1) {
-      y = y * scaleParams[1];
+    if (scaleParams[0] >= 1) { // max >= 1
+      y = y * scaleParams[1]; // y = y * scale_k
     }
 
     return y;
