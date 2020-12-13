@@ -1,8 +1,8 @@
 export class Matrix {
+
   data: Array<number[]>;
   rows: number;
   columns: number;
-
   constructor(rows: number, columns: number,
               left?: number, right?: number) {
 
@@ -17,16 +17,25 @@ export class Matrix {
     }
   }
 
+  private static random(matrix: Matrix, min: number, max: number): void {
+    const matrixData: Array<number[]> = matrix.data;
+    for (let i = 0; i < matrix.rows; i++) {
+      for (let j = 0; j < matrix.columns; j++) {
+        matrixData[i][j] = (Math.random() * (max - min) + min) / 10;
+      }
+    }
+  }
+
   times(B: Matrix): Matrix {
-    let X = new Matrix(this.rows, B.columns);
-    let C: Array<number[]> = X.data;
-    let Bcolj: number[] = Array(this.columns);
+    const X = new Matrix(this.rows, B.columns);
+    const C: Array<number[]> = X.data;
+    const Bcolj: number[] = Array(this.columns);
     for (let j = 0; j < B.columns; j++) {
       for (let k = 0; k < this.columns; k++) {
         Bcolj[k] = B.data[k][j];
       }
       for (let i = 0; i < this.rows; i++) {
-        let Arowi: number[] = this.data[i];
+        const Arowi: number[] = this.data[i];
         let s = 0;
         for (let k = 0; k < this.columns; k++) {
           s += Arowi[k] * Bcolj[k];
@@ -41,8 +50,8 @@ export class Matrix {
   }
 
   minus(B: Matrix): Matrix {
-    let X: Matrix = new Matrix(this.rows, this.columns);
-    let C: Array<number[]> = X.data;
+    const X: Matrix = new Matrix(this.rows, this.columns);
+    const C: Array<number[]> = X.data;
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
         C[i][j] = this.data[i][j] - B.data[i][j];
@@ -55,9 +64,9 @@ export class Matrix {
   }
 
   getLinePart(lineIndex: number, beginIndex: number, partSize: number): number[] {
-    let line: number[] = Array(partSize);
-    let endIndex: number = beginIndex + partSize;
-    let i: number = 0;
+    const line: number[] = Array(partSize);
+    const endIndex: number = beginIndex + partSize;
+    let i = 0;
     for (let j = beginIndex; j < endIndex; j++) {
       line[i] = this.data[lineIndex][j];
       i++;
@@ -71,7 +80,7 @@ export class Matrix {
 
   public setLine(lineIndex: number, beginIndex: number,
                  partSize: number, linePart: number[]): void {
-    let endIndex = beginIndex + partSize;
+    const endIndex = beginIndex + partSize;
     let i = -1;
     for (let j = beginIndex; j < endIndex; j++) {
       i++;
@@ -80,26 +89,18 @@ export class Matrix {
   }
 
   print(): void {
-    console.log("\n");
+    console.log('\n');
     console.log(this.data);
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        let s: string = `${this.data[i][j]}`;
-        let padding: number = Math.max(1, this.columns - s.length);
-        for (let k = 0; k < padding; k++)
-          console.log(" ", s);
+        const s = `${this.data[i][j]}`;
+        const padding: number = Math.max(1, this.columns - s.length);
+        for (let k = 0; k < padding; k++) {
+          console.log(' ', s);
+        }
       }
-      console.log("\n")
+      console.log('\n');
     }
-    console.log("\n")
-  }
-
-  private static random(matrix: Matrix, min: number, max: number): void {
-    let matrixData: Array<number[]> = matrix.data;
-    for (let i = 0; i < matrix.rows; i++) {
-      for (let j = 0; j < matrix.columns; j++) {
-        matrixData[i][j] = (Math.random() * (max - min) + min) / 10;
-      }
-    }
+    console.log('\n');
   }
 }
