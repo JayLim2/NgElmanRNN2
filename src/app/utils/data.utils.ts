@@ -4,6 +4,7 @@ import {Observable, Subject} from 'rxjs';
 import {Matrix} from '../models/matrix.model';
 import {Network} from '../models/network.model';
 import {Layer} from '../models/layer.model';
+import {MathUtils} from "./math.utils";
 
 export type Dataset = 'functional' | 'sber' | 'gold';
 
@@ -157,6 +158,8 @@ export class DataUtils {
   }
 
   public train() {
+    console.log("TRAIN")
+
     console.log('Training: ', this.trainingSequence);
     console.log('Testing: ', this.testSequence);
     const sequence: number[] = this.getSequence(this.trainingSequence);
@@ -186,19 +189,20 @@ export class DataUtils {
 
   public test() {
     console.log('TEST');
+
     const sequence: number[] = this.getSequence(this.testSequence);
     const windowSize = 5;
     const count = sequence.length - windowSize;
     const predict: number[] = Array(count);
     const real: number[] = Array(count);
 
-    console.log('test seq: ', this.testSequence);
-    console.log('test seq (numbers): ', sequence);
+    // console.log('test seq: ', this.testSequence);
+    // console.log('test seq (numbers): ', sequence);
 
     for (let i = 0; i < count; i++) {
       const seq: number[] = sequence.slice(i, i + windowSize);
-      console.log("SEQ: ");
-      console.log(seq);
+      // console.log("SEQ: ");
+      // console.log(seq);
 
       const yPredict = this.runSequenceTest(seq);
       const yReal = sequence[i + 5];
@@ -208,7 +212,7 @@ export class DataUtils {
 
       this.putData(i + 1, real[i], predict[i]);
     }
-    console.log('СКО: ', this.calculateError(real, predict), '\n');
+    console.log('СКО: ', MathUtils.calculateError(real, predict), '\n');
     console.log('Реальные: ');
     console.log(real);
     console.log('Прогноз: ');
@@ -222,36 +226,10 @@ export class DataUtils {
     let y: number = network.test(
       input, this.w1, this.w2, this.layers, this.contextSet
     );
-    if (scaleParams[0] >= 1) { // max >= 1
-      y = y * scaleParams[1]; // y = y * scale_k
+    if (scaleParams[0] >= 1) {
+      y = y * scaleParams[1];
     }
     return y;
-  }
-
-  private calculateError(real: number[], predict: number[]): number {
-    const average = this.getAverage(predict);
-    const sumSquaredDeviations = this.sumSquaredDeviations(real, predict);
-
-    return Math.sqrt(sumSquaredDeviations / average);
-  }
-
-  private sumSquaredDeviations(arr1: number[], arr2: number[]): number {
-    let sumSqrDev = 0;
-    if (arr1.length === arr2.length) {
-      for (let i = 0; i < arr1.length; i++) {
-        const deltaSqr = Math.pow(arr1[i] - arr2[i], 2);
-        sumSqrDev += deltaSqr;
-      }
-    }
-    return sumSqrDev;
-  }
-
-  private getAverage(arr: number[]): number {
-    let sum = 0;
-    for (const v of arr) {
-      sum += v;
-    }
-    return sum / arr.length;
   }
 
   private getSequence(seqStr: string): number[] {
@@ -264,7 +242,7 @@ export class DataUtils {
   }
 
   private scaleSequence(sequence: number[]): number[] {
-    const max = this.findMax(sequence);
+    const max = MathUtils.findMax(sequence);
     let k = 1;
     if (max > 1) {
       let scaledMax = max;
@@ -277,16 +255,6 @@ export class DataUtils {
       }
     }
     return [max, k];
-  }
-
-  private findMax(sequence: number[]): number {
-    let max = 0;
-    for (const v of sequence) {
-      if (Math.abs(v) > max) {
-        max = Math.abs(v);
-      }
-    }
-    return max;
   }
 
   private getInputMatrix(sequence: number[]): Matrix {
@@ -305,10 +273,6 @@ export class DataUtils {
       currentStep += step;
     }
     return inputMatrix;
-  }
-
-  private random(left: number, right: number): number {
-    return Math.random() * (right - left) + left;
   }
 
   private alpha(): number {

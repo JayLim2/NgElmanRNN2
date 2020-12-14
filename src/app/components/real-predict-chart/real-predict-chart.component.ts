@@ -39,7 +39,7 @@ export class RealPredictChartComponent implements OnInit{
   width = 1000;
   height = this.width / 1.5;
 
-  title: string = "Котировки золота";
+  title: string = "Реальные / Прогноз";
   realDataLabel: string = "Реальные данные";
   predictedDataLabel: string = "Прогноз";
 
