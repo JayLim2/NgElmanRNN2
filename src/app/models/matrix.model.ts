@@ -26,7 +26,7 @@ export class Matrix {
     }
   }
 
-  times(B: Matrix): Matrix {
+  mul(B: Matrix): Matrix {
     const X = new Matrix(this.rows, B.columns);
     const C: Array<number[]> = X.data;
     const columnB: number[] = Array(this.columns);
@@ -36,17 +36,17 @@ export class Matrix {
       }
       for (let i = 0; i < this.rows; i++) {
         const rowA: number[] = this.data[i];
-        let s = 0;
+        let sum = 0;
         for (let k = 0; k < this.columns; k++) {
-          s = this.getValueOrLimit(s + rowA[k] * columnB[k]);
+          sum = this.getValueOrLimit(sum + rowA[k] * columnB[k]);
         }
-        C[i][j] = s;
+        C[i][j] = sum;
       }
     }
     return X;
   }
 
-  minus(B: Matrix): Matrix {
+  sub(B: Matrix): Matrix {
     const X: Matrix = new Matrix(this.rows, this.columns);
     const C: Array<number[]> = X.data;
     for (let i = 0; i < this.rows; i++) {

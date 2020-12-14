@@ -2,17 +2,17 @@ import {Matrix} from './matrix.model';
 import {Constants} from "../utils/constants";
 
 export class Layer {
-  neuronsList: Matrix;
-  t: Matrix;
+  neurons: Matrix;
+  delay: Matrix;
 
   constructor(rowsCount: number, columnsCount: number) {
-    this.neuronsList = new Matrix(rowsCount, columnsCount);
-    this.t = new Matrix(rowsCount, columnsCount, Constants.LEFT, Constants.RIGHT);
+    this.neurons = new Matrix(rowsCount, columnsCount);
+    this.delay = new Matrix(rowsCount, columnsCount, Constants.LEFT, Constants.RIGHT);
   }
 
   public print(name: string) {
     console.log(`### ${name} ###`);
-    console.log('n: ', this.neuronsList.print());
-    console.log('t: ', this.t.print());
+    console.log('n: ', this.neurons.print());
+    console.log('t: ', this.delay.print());
   }
 }

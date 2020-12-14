@@ -87,8 +87,8 @@ export class DataUtils {
     outputCount: 0,
     windowSize: 4,
     maxError: 0.0001,
-    alpha: 0.01,
-    scale: 10
+    learnRate: 0.01,
+    moment: 0.01
   };
 
   private layers: Layer[];
@@ -172,14 +172,15 @@ export class DataUtils {
     network.train(
       inputMatrix,
       this.configuration.maxError,
-      this.configuration.alpha,
+      this.configuration.moment,
+      this.configuration.learnRate,
       this.configuration.epochs
     );
 
     this.layers = network.layers;
     this.contextSet = network.contextSet;
-    this.w1 = network.resW1;
-    this.w2 = network.resW2;
+    this.w1 = network.hiddenWeights;
+    this.w2 = network.outputWeights;
 
     console.log('w1');
     this.w1.print();
@@ -276,11 +277,11 @@ export class DataUtils {
   }
 
   private alpha(): number {
-    return this.configuration.alpha;
+    return this.configuration.moment;
   }
 
   private learnRate(): number {
-    return this.alpha();
+    return this.configuration.learnRate;
   }
 
 }
