@@ -92,8 +92,8 @@ export class DataUtils {
   };
 
   private layers: Layer[];
-  private w1: Matrix;
-  private w2: Matrix;
+  private hiddenWeights: Matrix;
+  private outputWeights: Matrix;
   private contextSet: Matrix;
 
   output = '';
@@ -158,10 +158,6 @@ export class DataUtils {
   }
 
   public train() {
-    console.log("TRAIN")
-
-    console.log('Training: ', this.trainingSequence);
-    console.log('Testing: ', this.testSequence);
     const sequence: number[] = this.getSequence(this.trainingSequence);
     this.scaleSequence(sequence);
 
@@ -179,13 +175,13 @@ export class DataUtils {
 
     this.layers = network.layers;
     this.contextSet = network.contextSet;
-    this.w1 = network.hiddenWeights;
-    this.w2 = network.outputWeights;
+    this.hiddenWeights = network.hiddenWeights;
+    this.outputWeights = network.outputWeights;
 
-    console.log('w1');
-    this.w1.print();
-    console.log('w2');
-    this.w2.print();
+    console.log('hidden weights');
+    this.hiddenWeights.print();
+    console.log('output weights');
+    this.outputWeights.print();
   }
 
   public test() {
@@ -225,7 +221,7 @@ export class DataUtils {
     const input: Matrix = this.getInputMatrix(seq);
     const network: Network = new Network(this);
     let y: number = network.test(
-      input, this.w1, this.w2, this.layers, this.contextSet
+      input, this.hiddenWeights, this.outputWeights, this.layers, this.contextSet
     );
     if (scaleParams[0] >= 1) {
       y = y * scaleParams[1];

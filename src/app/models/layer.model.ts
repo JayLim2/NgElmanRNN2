@@ -12,7 +12,7 @@ export class Layer {
 
   public print(name: string) {
     console.log(`### ${name} ###`);
-    console.log('n: ', this.neurons.print());
-    console.log('t: ', this.delay.print());
+    console.log('neurons: ', this.neurons.print());
+    console.log('delay: ', this.delay.print());
   }
 }

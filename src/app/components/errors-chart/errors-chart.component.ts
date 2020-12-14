@@ -34,7 +34,6 @@ export class ErrorsChartComponent implements OnInit{
 
   ngOnInit() {
     this.dataUtils.errors$.subscribe((data) => {
-      console.log("DETECTED ERROR")
       this.updateChartOptions();
     })
   }

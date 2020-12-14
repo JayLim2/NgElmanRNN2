@@ -2,6 +2,7 @@ import {Matrix} from './matrix.model';
 import {Layer} from './layer.model';
 import {DataUtils} from "../utils/data.utils";
 import {Constants} from "../utils/constants";
+import {MathUtils} from "../utils/math.utils";
 
 export class Network {
   // индексы
@@ -21,8 +22,13 @@ export class Network {
   ) {
   }
 
+  train(
+    input: Matrix,
+    idealError: number,
+    moment: number, learnRate: number,
+    epochs: number
+  ): void {
 
-  train(input: Matrix, e: number, moment: number, learnRate: number, epochs: number) {
     let x: number[];
     let yReal: number, y: number, outError: number, Ej: number;
     let Sh: Matrix, Sy: Matrix;
@@ -44,11 +50,10 @@ export class Network {
 
     let context: number[];
 
-    let E: number;
-    let isRunning = true;
+    let E: number = 1;
     let currentEpoch = 0;
 
-    do {
+    while (Math.abs(E) > idealError && currentEpoch < epochs) {
       E = 0;
 
       // Прямой проход: для каждого вектора последовательности вычисляем состояния скрытого слоя
@@ -73,7 +78,7 @@ export class Network {
         outError = y - yReal;
 
         const hiddenErrors: number[] = Array(hiddenCount);
-        const dFSy: number = this.derivativeActivationFunction(Sy.data[0][0]);
+        const dFSy: number = MathUtils.dFunction(Sy.data[0][0]);
         for (let wI = 0; wI < hiddenCount; wI++) {
           outputWeights.data[wI][0] = outputWeights.data[wI][0] - learnRate * outError * dFSy * this.layers[Network.HIDDEN].neurons.data[0][wI];
         }
@@ -81,7 +86,7 @@ export class Network {
 
         const dFSh: Matrix = new Matrix(1, hiddenCount);
         for (let j = 0; j < hiddenCount; j++) {
-          dFSh.data[0][j] = this.derivativeActivationFunction(Sh.data[0][j]);
+          dFSh.data[0][j] = MathUtils.dFunction(Sh.data[0][j]);
           hiddenErrors[j] = outError * dFSh.data[0][j] * outputWeights.data[j][0];
         }
 
@@ -125,17 +130,13 @@ export class Network {
       }
 
       currentEpoch++;
+
       if (currentEpoch % (epochs / 10) === 0) {
         console.log(`Итераций = ${currentEpoch}; E = ${E}`);
-
         //show error on chart
         this.dataUtils.putError(currentEpoch, E);
       }
-      if (currentEpoch === epochs) {
-        isRunning = false;
-        console.log('Выход по количеству итераций');
-      }
-    } while (Math.abs(E) > e && isRunning);
+    }
 
     x = input.getLinePart(inputRowsCount - 1, 1, inputCount);
     context = this.contextSet.getLine(inputRowsCount - 1);
@@ -164,22 +165,21 @@ export class Network {
     console.log(`Y = ${y}`);
   }
 
-  test(input: Matrix,
-       inputW1: Matrix, inputW2: Matrix,
-       layers: Layer[],
-       inputContextSet: Matrix): number {
+  test(
+    input: Matrix,
+    hiddenWeights: Matrix, outputWeights: Matrix,
+    layers: Layer[],
+    inputContextSet: Matrix
+  ): number {
 
     this.layers = layers;
     this.contextSet = inputContextSet;
 
     const inputRowsCount = input.rows;
     const inputColumnsCount = input.columns;
-    const inputCount = inputColumnsCount - 1;
 
-    let hiddenCount = inputCount / 2;
-    if (hiddenCount < 2) {
-      hiddenCount = 2;
-    }
+    const inputCount = inputColumnsCount - 1;
+    const hiddenCount = Math.max(inputCount / 2, 2);
 
     const x: number[] = input.getLinePart(inputRowsCount - 1, 1, inputCount);
     const context: number[] = this.contextSet.getLine(inputRowsCount - 1);
@@ -187,10 +187,10 @@ export class Network {
     this.layers[Network.CONTEXT].neurons.setLine(0, 0, inputCount, x);
     this.layers[Network.CONTEXT].neurons.setLine(0, inputCount, hiddenCount, context);
 
-    const Sh: Matrix = this.layers[Network.CONTEXT].neurons.mul(inputW1).sub(this.layers[Network.HIDDEN].delay);
+    const Sh: Matrix = this.layers[Network.CONTEXT].neurons.mul(hiddenWeights).sub(this.layers[Network.HIDDEN].delay);
     this.layers[Network.HIDDEN].neurons = this.activate(Sh);
 
-    const Sy: Matrix = this.layers[Network.HIDDEN].neurons.mul(inputW2).sub(this.layers[Network.OUTPUT].delay);
+    const Sy: Matrix = this.layers[Network.HIDDEN].neurons.mul(outputWeights).sub(this.layers[Network.OUTPUT].delay);
     this.layers[Network.OUTPUT].neurons = this.activate(Sy);
 
     return this.layers[Network.OUTPUT].neurons.data[0][0];
@@ -201,21 +201,9 @@ export class Network {
     const columnsCount = S.columns;
     const output: Matrix = new Matrix(1, columnsCount);
     for (let j = 0; j < columnsCount; j++) {
-      output.data[lineIndex][j] = this.activationFunction(S.data[lineIndex][j]);
+      output.data[lineIndex][j] = MathUtils.function(S.data[lineIndex][j]);
     }
     return output;
   }
 
-  // функция активации
-  private activationFunction(x: number): number {
-    return 1 / (1 + Math.exp(-x));
-    // return Math.atan(x);
-  }
-
-  // производная функции активации
-  private derivativeActivationFunction(x: number): number {
-    const fx = this.activationFunction(x);
-    return fx * (1 - fx);
-    // return 1.0 / (1.0 + x * x);
-  }
 }

@@ -99,7 +99,6 @@ export class RealPredictChartComponent implements OnInit{
 
   ngOnInit() {
     this.dataUtils.predictedData$.subscribe((data) => {
-      console.log("DETECTED DATA")
       this.buildChartOptions();
     });
   }

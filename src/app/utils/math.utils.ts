@@ -1,5 +1,16 @@
 export class MathUtils {
 
+  public static function(x: number): number {
+    return 1 / (1 + Math.exp(-x));
+    // return Math.atan(x);
+  }
+
+  public static dFunction(x: number): number {
+    const fx = this.function(x);
+    return fx * (1 - fx);
+    // return 1.0 / (1.0 + x * x);
+  }
+
   public static findMax(sequence: number[]): number {
     let max = 0;
     for (const v of sequence) {
