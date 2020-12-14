@@ -5,6 +5,8 @@ import {Matrix} from '../models/matrix.model';
 import {Network} from '../models/network.model';
 import {Layer} from '../models/layer.model';
 
+export type Dataset = 'sber' | 'gold';
+
 export interface ErrorsChart {
   epochs: string[],
   errors: number[]
@@ -54,6 +56,20 @@ export class DataUtils {
     this.dataChart.predictedData.push(predicted);
 
     this.days$.next(this.dataChart.days);
+    this.realData$.next(this.dataChart.realData);
+    this.predictedData$.next(this.dataChart.predictedData);
+  }
+
+  clear() {
+    this.errorsChart.epochs = [];
+    this.errorsChart.errors = [];
+    this.epochs$.next(this.errorsChart.epochs);
+    this.errors$.next(this.errorsChart.errors);
+
+    this.dataChart.days = [];
+    this.dataChart.realData = [];
+    this.dataChart.predictedData = [];
+    this.days$.next([this.dataChart.days]);
     this.realData$.next(this.dataChart.realData);
     this.predictedData$.next(this.dataChart.predictedData);
   }
@@ -118,9 +134,20 @@ export class DataUtils {
     this.testSequence = testNumbers.join(' ').trim();
   }
 
-  public load(): void {
-    this.loadDataset().subscribe((dataset: string) => {
+  dataset: Dataset;
+  dataset$: Subject<Dataset> = new Subject();
+
+  public load(name: Dataset): void {
+    this.loadDataset(name).subscribe((dataset: string) => {
+      this.dataset$.next(name);
+      this.clear();
       this.distribute(dataset);
+    });
+  }
+
+  private loadDataset(name: Dataset): Observable<any> {
+    return this.http.get(`../../assets/${name}.txt`, {
+      responseType: 'text'
     });
   }
 
@@ -168,7 +195,6 @@ export class DataUtils {
 
       const yPredict = this.runSequenceTest(seq);
       const yReal = sequence[i + length];
-      console.log("seq 11: ", seq);
 
       predict[i] = yPredict;
       real[i] = yReal;
@@ -191,13 +217,6 @@ export class DataUtils {
       y = y * scaleParams[1]; // y = y * scale_k
     }
     return y;
-  }
-
-  private printArr(arr: number[]) {
-    for (const v of arr) {
-      console.log(v, ' ');
-    }
-    console.log('\n');
   }
 
   private calculateError(real: number[], predict: number[]): number {
@@ -224,12 +243,6 @@ export class DataUtils {
       sum += v;
     }
     return sum / arr.length;
-  }
-
-  private loadDataset(): Observable<any> {
-    return this.http.get('../../assets/gold.txt', {
-      responseType: 'text'
-    });
   }
 
   private getSequence(seqStr: string): number[] {

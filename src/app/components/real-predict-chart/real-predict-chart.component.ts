@@ -14,7 +14,7 @@ import {
   ChartComponent
 } from 'ng-apexcharts';
 import {Subject} from "rxjs";
-import {DataUtils} from "../../utils/data.utils";
+import {Dataset, DataUtils} from "../../utils/data.utils";
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -63,46 +63,43 @@ export class RealPredictChartComponent implements OnInit{
   minCost: number = 230;
   maxCost: number = 280;
 
+  currentDataset: Dataset | undefined;
+
   constructor(
     private dataUtils: DataUtils
   ) {
     this.buildChartOptions();
   }
 
+  getMinMaxCost() {
+    let data: number[] = this.realData;
+    if (!data || data.length === 0) {
+      return;
+    }
+    let min = data[0];
+    let max = data[1];
+    for (let i = 0; i < data.length; i++) {
+      let current = data[i];
+      if (current > max) {
+        max = current;
+      }
+      if (current < min) {
+        min = current;
+      }
+    }
+    this.minCost = 0.9 * min;
+    this.maxCost = 1.1 * max;
+  }
+
   ngOnInit() {
     this.dataUtils.predictedData$.subscribe((data) => {
       console.log("DETECTED DATA")
-      this.updateChartOptions();
+      this.buildChartOptions();
     });
   }
 
-  private updateChartOptions() {
-    this.chartOptions.series = [
-      {
-        name: this.realDataLabel,
-        data: this.realData
-      },
-      {
-        name: this.predictedDataLabel,
-        data: this.predictedData
-      }
-    ];
-    this.chartOptions.xaxis = {
-      categories: this.days,
-        title: {
-        text: this.daysLabel
-      }
-    }
-    this.chartOptions.yaxis = {
-      title: {
-        text: this.costLabel
-      },
-      min: this.minCost,
-      max: this.maxCost
-    };
-  }
-
   private buildChartOptions() {
+    this.getMinMaxCost();
     this.chartOptions = {
       series: [
         {

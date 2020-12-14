@@ -1,7 +1,7 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import {ChartComponent} from 'ng-apexcharts';
 import {ChartOptions} from '../real-predict-chart/real-predict-chart.component';
-import {DataUtils} from "../../utils/data.utils";
+import {Dataset, DataUtils} from "../../utils/data.utils";
 
 @Component({
   selector: 'errors-chart',
@@ -25,6 +25,8 @@ export class ErrorsChartComponent implements OnInit{
   @ViewChild('chart') chart: ChartComponent;
 
   public chartOptions: Partial<ChartOptions>;
+
+  currentDataset: Dataset | undefined;
 
   constructor(
     private dataUtils: DataUtils

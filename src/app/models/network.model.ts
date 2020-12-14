@@ -37,8 +37,8 @@ export class Network {
 
     let stepsCount = 0;
 
-    const left = -0.5;
-    const right = 0.5;
+    const left = 0;
+    const right = 1;
 
     this.layers[Network.CONTEXT] = new Layer(1, inputCount + hiddenCount);
     this.contextSet = new Matrix(inputRowsCount, hiddenCount, left, right);

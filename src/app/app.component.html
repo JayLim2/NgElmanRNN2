@@ -1,35 +1,38 @@
-<p>{{title}}</p>
+<div style="display: flex; flex-direction: row">
+  <p>{{title}}</p>
+
+  <div>
+    <form [formGroup]="datasetForm">
+      <select style="margin: 10px; font-size: 12pt; padding: 5px;"
+              [formControlName]="'dataset'"
+      >
+        <option value="gold">Золото</option>
+        <option value="sber">Сбербанк</option>
+      </select>
+    </form>
+  </div>
+</div>
 
 <div style="display: flex; flex-direction: column">
   <div>
-    <ng-container *ngIf="!dataUtils.trainingSequence && dataUtils.loading; else train">
-      Preparing data...
-    </ng-container>
-
-    <ng-container *ngIf="dataUtils.training && !dataUtils.trained; else trained">
-      Training...
-    </ng-container>
-    <ng-template #trained>
-      <ng-container *ngIf="dataUtils.trained">
-        Trained successfully.
-      </ng-container>
-    </ng-template>
-
-    <ng-template #train>
-      <button (click)="onTrain()">
-        Train
-      </button>
-      <button (click)="onTest()">
-        Test
-      </button>
-    </ng-template>
+    <button (click)="onLoad()">
+      Load dataset
+    </button>
+    <button (click)="onTrain()">
+      Train
+    </button>
+    <button (click)="onTest()">
+      Test
+    </button>
   </div>
   <div style="padding-left: 10px;width: 100%">
     <div>
-      <errors-chart [epochs]="dataUtils.errorsChart.epochs"
+      <errors-chart #errorsChart
+                    [epochs]="dataUtils.errorsChart.epochs"
                     [errors]="dataUtils.errorsChart.errors"
       ></errors-chart>
-      <real-predict-chart [days]="dataUtils.dataChart.days"
+      <real-predict-chart #dataChart
+                          [days]="dataUtils.dataChart.days"
                           [realData]="dataUtils.dataChart.realData"
                           [predictedData]="dataUtils.dataChart.predictedData"
       ></real-predict-chart>
