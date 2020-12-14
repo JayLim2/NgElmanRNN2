@@ -1,14 +1,13 @@
 import {Matrix} from './matrix.model';
+import {Constants} from "../utils/constants";
 
 export class Layer {
   neuronsList: Matrix;
   t: Matrix;
 
-  constructor(linesCount: number, columnsCount: number) {
-    const left = 0;
-    const right = 1;
-    this.neuronsList = new Matrix(linesCount, columnsCount);
-    this.t = new Matrix(linesCount, columnsCount, left, right);
+  constructor(rowsCount: number, columnsCount: number) {
+    this.neuronsList = new Matrix(rowsCount, columnsCount);
+    this.t = new Matrix(rowsCount, columnsCount, Constants.LEFT, Constants.RIGHT);
   }
 
   public print(name: string) {

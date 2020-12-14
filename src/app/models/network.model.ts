@@ -1,6 +1,7 @@
 import {Matrix} from './matrix.model';
 import {Layer} from './layer.model';
 import {DataUtils} from "../utils/data.utils";
+import {Constants} from "../utils/constants";
 
 export class Network {
   // индексы
@@ -28,29 +29,24 @@ export class Network {
 
     const inputRowsCount = input.rows;
     const inputColumnsCount = input.columns;
+
     const inputCount = inputColumnsCount - 1;
-
-    let hiddenCount = inputCount / 2;
-    if (hiddenCount < 2) {
-      hiddenCount = 2;
-    }
-
-    let stepsCount = 0;
-
-    const left = 0;
-    const right = 1;
+    const hiddenCount = Math.max(inputCount / 2, 2);
+    const outputCount = 1;
 
     this.layers[Network.CONTEXT] = new Layer(1, inputCount + hiddenCount);
-    this.contextSet = new Matrix(inputRowsCount, hiddenCount, left, right);
-    const w1: Matrix = new Matrix(inputCount + hiddenCount, hiddenCount, left, right);
+    this.contextSet = new Matrix(inputRowsCount, hiddenCount, Constants.LEFT, Constants.RIGHT);
+    const hiddenWeights: Matrix = new Matrix(inputCount + hiddenCount, hiddenCount, Constants.LEFT, Constants.RIGHT);
 
     this.layers[Network.HIDDEN] = new Layer(1, hiddenCount);
-    this.layers[Network.OUTPUT] = new Layer(1, 1);
-    const w2: Matrix = new Matrix(hiddenCount, 1, left, right);
+    this.layers[Network.OUTPUT] = new Layer(1, outputCount);
+    const outputWeights: Matrix = new Matrix(hiddenCount, outputCount, Constants.LEFT, Constants.RIGHT);
 
     let context: number[];
+
     let E: number;
     let isRunning = true;
+    let currentEpoch = 0;
 
     do {
       E = 0;
@@ -65,10 +61,10 @@ export class Network {
         this.layers[Network.CONTEXT].neuronsList.setLine(0, 0, inputCount, x);
         this.layers[Network.CONTEXT].neuronsList.setLine(0, inputCount, hiddenCount, context);
 
-        Sh = this.layers[Network.CONTEXT].neuronsList.times(w1).minus(this.layers[Network.HIDDEN].t);
+        Sh = this.layers[Network.CONTEXT].neuronsList.times(hiddenWeights).minus(this.layers[Network.HIDDEN].t);
         this.layers[Network.HIDDEN].neuronsList = this.activate(Sh);
 
-        Sy = this.layers[Network.HIDDEN].neuronsList.times(w2).minus(this.layers[Network.OUTPUT].t);
+        Sy = this.layers[Network.HIDDEN].neuronsList.times(outputWeights).minus(this.layers[Network.OUTPUT].t);
         this.layers[Network.OUTPUT].neuronsList = this.activate(Sy);
 
         y = this.layers[Network.OUTPUT].neuronsList.data[0][0];
@@ -79,19 +75,19 @@ export class Network {
         const hiddenErrors: number[] = Array(hiddenCount);
         const dFSy: number = this.derivativeActivationFunction(Sy.data[0][0]);
         for (let wI = 0; wI < hiddenCount; wI++) {
-          w2.data[wI][0] = w2.data[wI][0] - alpha * outError * dFSy * this.layers[Network.HIDDEN].neuronsList.data[0][wI];
+          outputWeights.data[wI][0] = outputWeights.data[wI][0] - alpha * outError * dFSy * this.layers[Network.HIDDEN].neuronsList.data[0][wI];
         }
         this.layers[Network.OUTPUT].t.data[0][0] = this.layers[Network.OUTPUT].t.data[0][0] + alpha * outError * dFSy;
 
         const dFSh: Matrix = new Matrix(1, hiddenCount);
         for (let j = 0; j < hiddenCount; j++) {
           dFSh.data[0][j] = this.derivativeActivationFunction(Sh.data[0][j]);
-          hiddenErrors[j] = outError * dFSh.data[0][j] * w2.data[j][0];
+          hiddenErrors[j] = outError * dFSh.data[0][j] * outputWeights.data[j][0];
         }
 
         for (let wI = 0; wI < inputCount + hiddenCount; wI++) {
           for (let wJ = 0; wJ < hiddenCount; wJ++) {
-            w1.data[wI][wJ] = w1.data[wI][wJ] - alpha * hiddenErrors[wJ] * dFSh.data[0][wJ] * this.layers[Network.CONTEXT].neuronsList.data[0][wI];
+            hiddenWeights.data[wI][wJ] = hiddenWeights.data[wI][wJ] - alpha * hiddenErrors[wJ] * dFSh.data[0][wJ] * this.layers[Network.CONTEXT].neuronsList.data[0][wI];
           }
         }
 
@@ -114,10 +110,10 @@ export class Network {
         this.layers[Network.CONTEXT].neuronsList.setLine(0, inputCount, hiddenCount, context);
 
         // 7.36 7.37
-        Sh = this.layers[Network.CONTEXT].neuronsList.times(w1).minus(this.layers[Network.HIDDEN].t);
+        Sh = this.layers[Network.CONTEXT].neuronsList.times(hiddenWeights).minus(this.layers[Network.HIDDEN].t);
         this.layers[Network.HIDDEN].neuronsList = this.activate(Sh);
 
-        Sy = this.layers[Network.HIDDEN].neuronsList.times(w2).minus(this.layers[Network.OUTPUT].t);
+        Sy = this.layers[Network.HIDDEN].neuronsList.times(outputWeights).minus(this.layers[Network.OUTPUT].t);
         this.layers[Network.OUTPUT].neuronsList = this.activate(Sy);
 
         y = this.layers[Network.OUTPUT].neuronsList.data[0][0];
@@ -128,14 +124,14 @@ export class Network {
         E += Ej;
       }
 
-      stepsCount++;
-      if (stepsCount % (maxStepsCount / 10) === 0) {
-        console.log(`Итераций = ${stepsCount}; E = ${E}`);
+      currentEpoch++;
+      if (currentEpoch % (maxStepsCount / 10) === 0) {
+        console.log(`Итераций = ${currentEpoch}; E = ${E}`);
 
         //show error on chart
-        this.dataUtils.putError(stepsCount, E);
+        this.dataUtils.putError(currentEpoch, E);
       }
-      if (stepsCount === maxStepsCount) {
+      if (currentEpoch === maxStepsCount) {
         isRunning = false;
         console.log('Выход по количеству итераций');
       }
@@ -147,15 +143,15 @@ export class Network {
     this.layers[Network.CONTEXT].neuronsList.setLine(0, 0, inputCount, x);
     this.layers[Network.CONTEXT].neuronsList.setLine(0, inputCount, hiddenCount, context);
 
-    Sh = this.layers[Network.CONTEXT].neuronsList.times(w1).minus(this.layers[Network.HIDDEN].t);
+    Sh = this.layers[Network.CONTEXT].neuronsList.times(hiddenWeights).minus(this.layers[Network.HIDDEN].t);
     this.layers[Network.HIDDEN].neuronsList = this.activate(Sh);
 
-    Sy = this.layers[Network.HIDDEN].neuronsList.times(w2).minus(this.layers[Network.OUTPUT].t);
+    Sy = this.layers[Network.HIDDEN].neuronsList.times(outputWeights).minus(this.layers[Network.OUTPUT].t);
     this.layers[Network.OUTPUT].neuronsList = this.activate(Sy);
 
     y = this.layers[Network.OUTPUT].neuronsList.data[0][0];
-    this.resW1 = w1;
-    this.resW2 = w2;
+    this.resW1 = hiddenWeights;
+    this.resW2 = outputWeights;
 
     // console.log("Матрица весов W на первом слое:");
     // w1.print();
@@ -167,8 +163,8 @@ export class Network {
     // this.layers[Network.OUTPUT].print("OUTPUT");
 
     console.log(`E = ${E}`);
-    console.log(`ALPHA = ${alpha}`);
-    console.log(`Steps count = ${stepsCount}`);
+    console.log(`Alpha = ${alpha}`);
+    console.log(`Epochs = ${currentEpoch}`);
     console.log(`Y = ${y}`);
   }
 

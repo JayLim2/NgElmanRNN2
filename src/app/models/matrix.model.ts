@@ -29,19 +29,16 @@ export class Matrix {
   times(B: Matrix): Matrix {
     const X = new Matrix(this.rows, B.columns);
     const C: Array<number[]> = X.data;
-    const Bcolj: number[] = Array(this.columns);
+    const columnB: number[] = Array(this.columns);
     for (let j = 0; j < B.columns; j++) {
       for (let k = 0; k < this.columns; k++) {
-        Bcolj[k] = B.data[k][j];
+        columnB[k] = B.data[k][j];
       }
       for (let i = 0; i < this.rows; i++) {
-        const Arowi: number[] = this.data[i];
+        const rowA: number[] = this.data[i];
         let s = 0;
         for (let k = 0; k < this.columns; k++) {
-          s += Arowi[k] * Bcolj[k];
-          if (!Number.isFinite(s)) {
-            s = s > 0 ? Number.MAX_VALUE : Number.MIN_VALUE;
-          }
+          s = this.getValueOrLimit(s + rowA[k] * columnB[k]);
         }
         C[i][j] = s;
       }
@@ -54,13 +51,17 @@ export class Matrix {
     const C: Array<number[]> = X.data;
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        C[i][j] = this.data[i][j] - B.data[i][j];
-        if (!Number.isFinite(C[i][j])) {
-          C[i][j] = C[i][j] > 0 ? Number.MAX_VALUE : Number.MIN_VALUE;
-        }
+        C[i][j] = this.getValueOrLimit(this.data[i][j] - B.data[i][j]);
       }
     }
     return X;
+  }
+
+  private getValueOrLimit(value: any) {
+    if (!Number.isFinite(value)) {
+      return value > 0 ? Number.MAX_VALUE : Number.MIN_VALUE;
+    }
+    return value;
   }
 
   getLinePart(lineIndex: number, beginIndex: number, partSize: number): number[] {
@@ -78,8 +79,9 @@ export class Matrix {
     return [...this.data[lineIndex]];
   }
 
-  public setLine(lineIndex: number, beginIndex: number,
+  setLine(lineIndex: number, beginIndex: number,
                  partSize: number, linePart: number[]): void {
+
     const endIndex = beginIndex + partSize;
     let i = -1;
     for (let j = beginIndex; j < endIndex; j++) {
