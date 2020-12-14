@@ -5,8 +5,8 @@ export class Layer {
   t: Matrix;
 
   constructor(linesCount: number, columnsCount: number) {
-    const left = 0;
-    const right = 1;
+    const left = -0.5;
+    const right = 0.5;
     this.neuronsList = new Matrix(linesCount, columnsCount);
     this.t = new Matrix(linesCount, columnsCount, left, right);
   }

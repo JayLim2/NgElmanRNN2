@@ -5,11 +5,58 @@ import {Matrix} from '../models/matrix.model';
 import {Network} from '../models/network.model';
 import {Layer} from '../models/layer.model';
 
+export interface ErrorsChart {
+  epochs: string[],
+  errors: number[]
+}
+
+export interface DataChart {
+  realData: number[],
+  predictedData: number[],
+  days: string[]
+}
+
 @Injectable()
 export class DataUtils {
 
   trainingSequence = '';
   testSequence = '';
+
+  errorsChart: ErrorsChart = {
+    epochs: [],
+    errors: []
+  }
+
+  dataChart: DataChart = {
+    realData: [],
+    predictedData: [],
+    days: []
+  }
+
+  epochs$: Subject<any> = new Subject();
+  errors$: Subject<any> = new Subject();
+
+  realData$: Subject<any> = new Subject();
+  predictedData$: Subject<any> = new Subject();
+  days$: Subject<any> = new Subject();
+
+  putError(epoch: number, error: number): void {
+    this.errorsChart.epochs.push(`${epoch}`);
+    this.errorsChart.errors.push(error);
+
+    this.epochs$.next(this.errorsChart.epochs);
+    this.errors$.next(this.errorsChart.errors);
+  }
+
+  putData(day: any, real: number, predicted: number): void {
+    this.dataChart.days.push(`${day}`);
+    this.dataChart.realData.push(real);
+    this.dataChart.predictedData.push(predicted);
+
+    this.days$.next(this.dataChart.days);
+    this.realData$.next(this.dataChart.realData);
+    this.predictedData$.next(this.dataChart.predictedData);
+  }
 
   private configuration = {
     epochs: 10_000,
@@ -86,7 +133,7 @@ export class DataUtils {
     const inputMatrix: Matrix = this.getInputMatrix(sequence);
     inputMatrix.print();
 
-    const network: Network = new Network();
+    const network: Network = new Network(this);
     network.train(
       inputMatrix,
       this.configuration.maxError,
@@ -118,13 +165,16 @@ export class DataUtils {
     for (let i = 0; i < count; i++) {
       const length = 5;
       const seq: number[] = [];
-      seq.push(...sequence.slice(0, length));
+      seq.push(...sequence.slice(i, length));
 
       const yPredict = this.runSequenceTest(seq);
       const yReal = sequence[i + length];
+      console.log("Y REAL: ", yReal);
 
       predict[i] = yPredict;
       real[i] = yReal;
+
+      this.putData(i + 1, real[i], predict[i]);
     }
     console.log('СКО: ', this.calculateError(real, predict), '\n');
     console.log('Реальные: ', real);
@@ -134,7 +184,7 @@ export class DataUtils {
   private runSequenceTest(seq: number[]): number {
     const scaleParams: number[] = this.scaleSequence(seq);
     const input: Matrix = this.getInputMatrix(seq);
-    const network: Network = new Network();
+    const network: Network = new Network(this);
     let y: number = network.test(
       input, this.w1, this.w2, this.layers, this.contextSet
     );

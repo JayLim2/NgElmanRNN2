@@ -23,24 +23,23 @@
         Test
       </button>
     </ng-template>
-
-    <div style="display: flex; flex-direction: row">
-      <errors-chart [lineChartData]="dataUtils.trainingAccuracyChartData"
-                    [lineChartLabels]="dataUtils.trainingAccuracyChartLabels"
-      ></errors-chart>
-<!--      <errors-chart [lineChartData]="dataUtils.testAccuracyChartData"-->
-<!--                    [lineChartLabels]="dataUtils.testAccuracyChartLabels"-->
-<!--      ></errors-chart>-->
-      <real-predict-chart></real-predict-chart>
-    </div>
   </div>
   <div style="padding-left: 10px;width: 100%">
-   <label>
-     Console:
-     <br/>
-     <textarea style="width: 90%; height: 400px; resize: none; margin-bottom: 50px;"
-               readonly
-     >{{output}}</textarea>
-   </label>
+    <div>
+      <errors-chart [epochs]="dataUtils.errorsChart.epochs"
+                    [errors]="dataUtils.errorsChart.errors"
+      ></errors-chart>
+      <real-predict-chart [days]="dataUtils.dataChart.days"
+                          [realData]="dataUtils.dataChart.realData"
+                          [predictedData]="dataUtils.dataChart.predictedData"
+      ></real-predict-chart>
+    </div>
+    <label>
+      Console:
+      <br/>
+      <textarea style="width: 90%; height: 400px; resize: none; margin-bottom: 50px;"
+                readonly
+      >{{output}}</textarea>
+    </label>
   </div>
 </div>

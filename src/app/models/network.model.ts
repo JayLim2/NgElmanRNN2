@@ -1,5 +1,6 @@
 import {Matrix} from './matrix.model';
 import {Layer} from './layer.model';
+import {DataUtils} from "../utils/data.utils";
 
 export class Network {
   // индексы
@@ -13,6 +14,12 @@ export class Network {
   resW2: Matrix;
   contextSet: Matrix;
   layers: Layer[] = Array(Network.LAYERS_COUNT);
+
+  constructor(
+    public dataUtils: DataUtils
+  ) {
+  }
+
 
   train(input: Matrix, e: number, alpha: number, maxStepsCount: number) {
     let x: number[];
@@ -30,8 +37,8 @@ export class Network {
 
     let stepsCount = 0;
 
-    const left = 0;
-    const right = 1;
+    const left = -0.5;
+    const right = 0.5;
 
     this.layers[Network.CONTEXT] = new Layer(1, inputCount + hiddenCount);
     this.contextSet = new Matrix(inputRowsCount, hiddenCount, left, right);
@@ -124,6 +131,9 @@ export class Network {
       stepsCount++;
       if (stepsCount % (maxStepsCount / 10) === 0) {
         console.log(`Итераций = ${stepsCount}; E = ${E}`);
+
+        //show error on chart
+        this.dataUtils.putError(stepsCount, E);
       }
       if (stepsCount === maxStepsCount) {
         isRunning = false;
@@ -207,11 +217,13 @@ export class Network {
   // функция активации
   private activationFunction(x: number): number {
     return 1 / (1 + Math.exp(-x));
+    // return Math.atan(x);
   }
 
   // производная функции активации
   private derivativeActivationFunction(x: number): number {
     const fx = this.activationFunction(x);
     return fx * (1 - fx);
+    // return 1.0 / (1.0 + x * x);
   }
 }
