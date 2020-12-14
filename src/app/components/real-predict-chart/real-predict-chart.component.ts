@@ -13,7 +13,6 @@ import {
   ApexYAxis,
   ChartComponent
 } from 'ng-apexcharts';
-import {Subject} from "rxjs";
 import {Dataset, DataUtils} from "../../utils/data.utils";
 
 export type ChartOptions = {
@@ -63,8 +62,6 @@ export class RealPredictChartComponent implements OnInit{
   minCost: number = 230;
   maxCost: number = 280;
 
-  currentDataset: Dataset | undefined;
-
   constructor(
     private dataUtils: DataUtils
   ) {
@@ -72,14 +69,24 @@ export class RealPredictChartComponent implements OnInit{
   }
 
   getMinMaxCost() {
-    let data: number[] = this.realData;
-    if (!data || data.length === 0) {
+    let realData: number[] = this.realData;
+    let predictedData: number[] = this.predictedData;
+    if (!realData || realData.length === 0 || !predictedData || predictedData.length === 0) {
       return;
     }
-    let min = data[0];
-    let max = data[1];
-    for (let i = 0; i < data.length; i++) {
-      let current = data[i];
+    let realMinMax = this.findMinMax(realData);
+    let predictedMinMax = this.findMinMax(predictedData);
+    let min = Math.min(realMinMax[0], predictedMinMax[0]);
+    let max = Math.max(realMinMax[1], predictedMinMax[1]);
+    this.minCost = 0.9 * min;
+    this.maxCost = 1.1 * max;
+  }
+
+  private findMinMax(sequence: number[]): number[] {
+    let min = sequence[0];
+    let max = sequence[0];
+    for (let i = 0; i < sequence.length; i++) {
+      let current = sequence[i];
       if (current > max) {
         max = current;
       }
@@ -87,8 +94,7 @@ export class RealPredictChartComponent implements OnInit{
         min = current;
       }
     }
-    this.minCost = 0.9 * min;
-    this.maxCost = 1.1 * max;
+    return [min, max];
   }
 
   ngOnInit() {
@@ -132,7 +138,7 @@ export class RealPredictChartComponent implements OnInit{
         enabled: false
       },
       stroke: {
-        curve: 'smooth'
+        curve: 'straight'
       },
       title: {
         text: this.title,

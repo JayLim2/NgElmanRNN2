@@ -5,7 +5,7 @@ import {Matrix} from '../models/matrix.model';
 import {Network} from '../models/network.model';
 import {Layer} from '../models/layer.model';
 
-export type Dataset = 'sber' | 'gold';
+export type Dataset = 'functional' | 'sber' | 'gold';
 
 export interface ErrorsChart {
   epochs: string[],
@@ -54,6 +54,8 @@ export class DataUtils {
     this.dataChart.days.push(`${day}`);
     this.dataChart.realData.push(real);
     this.dataChart.predictedData.push(predicted);
+
+    console.log(this.dataChart.predictedData);
 
     this.days$.next(this.dataChart.days);
     this.realData$.next(this.dataChart.realData);
@@ -139,6 +141,9 @@ export class DataUtils {
 
   public load(name: Dataset): void {
     this.loadDataset(name).subscribe((dataset: string) => {
+      if (name === 'functional') {
+        this.configuration.epochs = 10_000;
+      }
       this.dataset$.next(name);
       this.clear();
       this.distribute(dataset);
@@ -182,19 +187,21 @@ export class DataUtils {
   public test() {
     console.log('TEST');
     const sequence: number[] = this.getSequence(this.testSequence);
-    const count = sequence.length;
+    const windowSize = 5;
+    const count = sequence.length - windowSize;
     const predict: number[] = Array(count);
     const real: number[] = Array(count);
 
     console.log('test seq: ', this.testSequence);
-    console.log('count: ', count);
+    console.log('test seq (numbers): ', sequence);
 
     for (let i = 0; i < count; i++) {
-      const length = 5;
-      const seq: number[] = [...sequence.slice(i, i + length)];
+      const seq: number[] = sequence.slice(i, i + windowSize);
+      console.log("SEQ: ");
+      console.log(seq);
 
       const yPredict = this.runSequenceTest(seq);
-      const yReal = sequence[i + length];
+      const yReal = sequence[i + 5];
 
       predict[i] = yPredict;
       real[i] = yReal;
@@ -202,8 +209,10 @@ export class DataUtils {
       this.putData(i + 1, real[i], predict[i]);
     }
     console.log('СКО: ', this.calculateError(real, predict), '\n');
-    console.log('Реальные: ', real);
-    console.log('Прогноз: ', predict);
+    console.log('Реальные: ');
+    console.log(real);
+    console.log('Прогноз: ');
+    console.log(predict);
   }
 
   private runSequenceTest(seq: number[]): number {

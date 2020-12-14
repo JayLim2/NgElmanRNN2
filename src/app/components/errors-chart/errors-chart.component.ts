@@ -26,8 +26,6 @@ export class ErrorsChartComponent implements OnInit{
 
   public chartOptions: Partial<ChartOptions>;
 
-  currentDataset: Dataset | undefined;
-
   constructor(
     private dataUtils: DataUtils
   ) {

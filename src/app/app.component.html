@@ -6,6 +6,7 @@
       <select style="margin: 10px; font-size: 12pt; padding: 5px;"
               [formControlName]="'dataset'"
       >
+        <option value="functional">Функциональный ряд</option>
         <option value="gold">Золото</option>
         <option value="sber">Сбербанк</option>
       </select>
@@ -27,17 +28,15 @@
   </div>
   <div style="padding-left: 10px;width: 100%">
     <div>
-      <errors-chart #errorsChart
-                    [epochs]="dataUtils.errorsChart.epochs"
+      <errors-chart [epochs]="dataUtils.errorsChart.epochs"
                     [errors]="dataUtils.errorsChart.errors"
       ></errors-chart>
-      <real-predict-chart #dataChart
-                          [days]="dataUtils.dataChart.days"
+      <real-predict-chart [days]="dataUtils.dataChart.days"
                           [realData]="dataUtils.dataChart.realData"
                           [predictedData]="dataUtils.dataChart.predictedData"
       ></real-predict-chart>
     </div>
-    <label>
+    <label *ngIf="false">
       Console:
       <br/>
       <textarea style="width: 90%; height: 400px; resize: none; margin-bottom: 50px;"

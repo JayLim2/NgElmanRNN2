@@ -1,8 +1,6 @@
-import {Component, ViewChild} from '@angular/core';
-import {Dataset, DataUtils} from "./utils/data.utils";
+import {Component} from '@angular/core';
+import {DataUtils} from "./utils/data.utils";
 import {FormControl, FormGroup} from "@angular/forms";
-import {ErrorsChartComponent} from "./components/errors-chart/errors-chart.component";
-import {RealPredictChartComponent} from "./components/real-predict-chart/real-predict-chart.component";
 
 @Component({
   selector: 'app-root',
@@ -20,15 +18,9 @@ export class AppComponent {
     public dataUtils: DataUtils
   ) {
     this.datasetForm = new FormGroup({
-      dataset: new FormControl('gold')
+      dataset: new FormControl('functional')
     })
   }
-
-  @ViewChild("errorsChart")
-  errorsChart: ErrorsChartComponent;
-
-  @ViewChild("dataChart")
-  dataChart: RealPredictChartComponent;
 
   onLoad() {
     this.dataUtils.load(this.datasetForm.value.dataset);
