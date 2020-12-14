@@ -132,7 +132,7 @@ export class RealPredictChartComponent implements OnInit{
       },
       colors: ['#007bff', '#ff6600'],
       dataLabels: {
-        enabled: true
+        enabled: false
       },
       stroke: {
         curve: 'smooth'

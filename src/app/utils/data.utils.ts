@@ -164,12 +164,11 @@ export class DataUtils {
 
     for (let i = 0; i < count; i++) {
       const length = 5;
-      const seq: number[] = [];
-      seq.push(...sequence.slice(i, length));
+      const seq: number[] = [...sequence.slice(i, i + length)];
 
       const yPredict = this.runSequenceTest(seq);
       const yReal = sequence[i + length];
-      console.log("Y REAL: ", yReal);
+      console.log("seq 11: ", seq);
 
       predict[i] = yPredict;
       real[i] = yReal;
