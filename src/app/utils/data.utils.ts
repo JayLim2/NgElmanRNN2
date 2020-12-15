@@ -272,12 +272,4 @@ export class DataUtils {
     return inputMatrix;
   }
 
-  private alpha(): number {
-    return this.configuration.moment;
-  }
-
-  private learnRate(): number {
-    return this.configuration.learnRate;
-  }
-
 }
