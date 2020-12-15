@@ -24,7 +24,6 @@ export class Network {
 
   train(
     input: Matrix,
-    idealError: number,
     moment: number, learnRate: number,
     epochs: number
   ): void {
@@ -53,7 +52,7 @@ export class Network {
     let E: number = 1;
     let currentEpoch = 0;
 
-    while (Math.abs(E) > idealError && currentEpoch < epochs) {
+    while (currentEpoch < epochs) {
       E = 0;
 
       // Прямой проход: для каждого вектора последовательности вычисляем состояния скрытого слоя

@@ -77,8 +77,13 @@ export class DataUtils {
     this.predictedData$.next(this.dataChart.predictedData);
   }
 
+  defaultEpochs = {
+    'functional': 8_000,
+    'other': 15_000
+  }
+
   private configuration = {
-    epochs: 10_000,
+    epochs: this.defaultEpochs.functional,
     training: 90,
     testing: 0,
     inputCount: 0,
@@ -128,7 +133,7 @@ export class DataUtils {
     // console.log(numbers);
 
     const trainingNumbers = numbers.slice(0, trainingCount);
-    const testNumbers = numbers.slice(trainingCount, numbers.length);
+    const testNumbers = numbers.slice(0.8 * trainingCount, numbers.length);
 
     // console.log(trainingNumbers);
     // console.log(testNumbers);
@@ -143,7 +148,9 @@ export class DataUtils {
   public load(name: Dataset): void {
     this.loadDataset(name).subscribe((dataset: string) => {
       if (name === 'functional') {
-        this.configuration.epochs = 10_000;
+        this.configuration.epochs = this.defaultEpochs.functional;
+      } else {
+        this.configuration.epochs = this.defaultEpochs.other;
       }
       this.dataset$.next(name);
       this.clear();
@@ -167,7 +174,6 @@ export class DataUtils {
     const network: Network = new Network(this);
     network.train(
       inputMatrix,
-      this.configuration.maxError,
       this.configuration.moment,
       this.configuration.learnRate,
       this.configuration.epochs
@@ -188,8 +194,9 @@ export class DataUtils {
     console.log('TEST');
 
     const sequence: number[] = this.getSequence(this.testSequence);
-    const windowSize = 5;
-    const count = sequence.length - windowSize;
+    const windowSize = 6;
+    // const count = sequence.length - windowSize;
+    const count = 50;
     const predict: number[] = Array(count);
     const real: number[] = Array(count);
 
